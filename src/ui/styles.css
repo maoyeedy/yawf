@@ -1,0 +1,10 @@
+/* ui/styles.css — Reserved for future CSS extraction.
+ *
+ * Currently the settings dialog CSS is injected at runtime via JavaScript
+ * (matching the original yyawf.user.js behavior) because the content-script
+ * styles must be added *after* the page is ready.
+ *
+ * When migrating to Vite's built-in CSS handling, move the CSS from
+ * ui/settings.ts (the `contentCSS` constant) into this file and
+ * `import './ui/styles.css'` in main.ts.
+ */
