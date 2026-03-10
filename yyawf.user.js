@@ -74,6 +74,7 @@ const payload =
       _kebabCache.set(word, result)
       return result
     }
+    const getComponentName = (type) => kebabCase(type?.name || type?.__name || type?.__refName)
     const rawFunctions = new WeakMap()
     const wrapFunction = function (original, wrapped) {
       const proxy = new Proxy(original, {
@@ -434,7 +435,7 @@ const payload =
     }
     const runLifecycleListeners = (lifecycle, instance) => {
       if (!instance?.render) return
-      const name = kebabCase(instance.type.name || instance.type.__name || instance.type.__refName)
+      const name = getComponentName(instance.type)
       const listenersForAny = lifecycleListeners[lifecycle]?.['*'] ?? []
       const listenersForComponent = lifecycleListeners[lifecycle]?.[name] ?? []
       const listeners = [...listenersForAny, ...listenersForComponent]
@@ -510,7 +511,7 @@ const payload =
       _processedStyleTypes.add(type)
       const $style = type?.__cssModules?.$style
       if (!$style) return
-      const prefix = kebabCase(type.name || type.__name || type.__refName)
+      const prefix = getComponentName(type)
       Object.keys($style).forEach((key) => {
         styleMapping.set($style[key], '__yawf_' + prefix + '_' + key)
       })
@@ -518,7 +519,7 @@ const payload =
     const renderWithExtraInfo = wrapRenderContext(function (instance) {
       const properName = (result) => {
         if (!result) return 'unnamed-component'
-        const name = kebabCase(result.type?.name || result.type?.__name || result.type?.__refName)
+        const name = getComponentName(result.type)
         if (name) return name + '--child'
         return properName(result.parent)
       }
@@ -597,9 +598,7 @@ const payload =
           ins && (!lv || typeof ins.__renderTag !== 'string');
           ins = ins.parent, ++lv
         ) {
-          const name = kebabCase(
-            ins.type.name || ins.type.__name || ins.type.__refName || properName(ins)
-          )
+          const name = getComponentName(ins.type) || properName(ins)
           result.props['__yawf_component_' + name + '__'] = ins.uid
           const key = ins.vnode.key
           if (typeof key === 'string' || typeof key === 'number' || typeof key === 'symbol') {
@@ -1271,7 +1270,6 @@ class ConfigManager {
     this._changeListeners.clear()
   }
 }
-const STATIC_KEY_PREFIX = 'cleanup::'
 const configDialog = function (profileId) {
   let contentDestroy = null
   let dirtyStaticKeys = new Set()
@@ -1333,6 +1331,14 @@ const renderConfig = (container, profileId, template, dirtyStaticKeys) => {
   const t = (t) => new Text(t)
   /** @type {HTMLElement} */
   const main = dom.querySelector('yawf-config').cloneNode(true)
+  const staticKeys = new Set(
+    [...main.querySelectorAll('yawf-rule[id]')]
+      .filter((rule) => {
+        const tabName = rule.closest('yawf-tab')?.getAttribute('name')
+        return tabName === '界面清理' || rule.id === 'about::debug'
+      })
+      .map((rule) => rule.id)
+  )
   //#region 标签页
   ;[...main.querySelectorAll('yawf-tabs')].forEach((tabs) => {
     const tabItems = [...tabs.children].filter((item) => item.matches('yawf-tab'))
@@ -1369,7 +1375,7 @@ const renderConfig = (container, profileId, template, dirtyStaticKeys) => {
   const setConfig = (key, newValue) => {
     configManager.set(key, newValue)
     invokePageScript('configUpdate', { key, value: newValue })
-    if (dirtyStaticKeys && key.startsWith(STATIC_KEY_PREFIX)) {
+    if (dirtyStaticKeys && staticKeys.has(key)) {
       dirtyStaticKeys.add(key)
       markDirtyLabel(key)
     }
@@ -1725,20 +1731,13 @@ const renderConfig = (container, profileId, template, dirtyStaticKeys) => {
     configManager.destroy()
   }
 }
-const _pendingContentStyles = []
-const addStyle = (css) => {
-  _pendingContentStyles.push(css)
-}
-const flushStyles = () => {
-  if (!_pendingContentStyles.length) return
-  // Create a new <style> element per flush to avoid re-parsing all existing CSS rules
+const injectContentStyle = (css) => {
   const el = document.body.appendChild(document.createElement('style'))
   el.id = 'yawf_content_style'
-  el.textContent = _pendingContentStyles.join('\n') + '\n'
-  _pendingContentStyles.length = 0
+  el.textContent = css.trim() + '\n'
 }
 appReady.then(() => {
-  addStyle(/* css */ `
+  injectContentStyle(/* css */ `
 .yawf-dialog.yawf-dialog { position: fixed; transition: none; }
 .yawf-dialog .woo-dialog-main { max-width: none; padding-bottom: 0; }
 .yawf-dialog-text { max-width: 400px; }
@@ -1807,7 +1806,6 @@ label:hover .yawf-checkbox-wrap .yawf-checkbox-icon,
 #yawf-fab:active { transform: scale(0.93); }
 #yawf-fab:focus-visible { outline: 3px solid var(--w-brand, #ff8200); outline-offset: 3px; opacity: 1; }
 `)
-  flushStyles()
 })
 //#endregion
 
