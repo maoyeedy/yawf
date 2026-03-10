@@ -7,15 +7,18 @@
     "dev": "vite",
     "build": "svelte-check --tsconfig ./tsconfig.json && vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "format": "biome format --write .",
+    "lint": "biome lint .",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "sass": "^1.97.3",
     "svelte-check": "^4.4.5",
-    "typescript": "^5.9.2",
-    "vite": "^7.1.3",
-    "vite-plugin-monkey": "^7.1.1"
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-monkey": "^7.1.9"
   },
   "dependencies": {
     "svelte": "^5.53.9"
