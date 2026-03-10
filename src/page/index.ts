@@ -89,18 +89,6 @@ function pageMain(config: Record<string, Record<string, unknown>>, messageKey: s
     rawFunctions.set(proxy, original);
     return proxy;
   };
-
-  const _pendingStyles: string[] = [];
-  const addStyle = (css: string) => {
-    _pendingStyles.push(css);
-  };
-  const flushStyles = () => {
-    if (!_pendingStyles.length) return;
-    const el = document.body.appendChild(document.createElement('style'));
-    el.id = 'yawf_page_style';
-    el.textContent = _pendingStyles.join('\n') + '\n';
-    _pendingStyles.length = 0;
-  };
   //#endregion
 
   //#region MessageBroker (page-script copy — must be self-contained)
@@ -849,55 +837,25 @@ function pageMain(config: Record<string, Record<string, unknown>>, messageKey: s
   //#endregion
 
   //#region 元素清理
-  const cleanupStyles: Record<string, string> = {
-    'cleanup::navHome': /* css */ `[__yawf_component_weibo-top-nav-base__] [__yawf_component_ctrls__] a[href="/"] { display: none; }`,
-    'cleanup::navHot': /* css */ `[__yawf_component_weibo-top-nav-base__] [__yawf_component_ctrls__] a[href="/hot"] { display: none; }`,
-    'cleanup::navTv': /* css */ `[__yawf_component_weibo-top-nav-base__] [__yawf_component_ctrls__] a[href="/tv"] { display: none; }`,
-    'cleanup::navMessage': /* css */ `[__yawf_component_weibo-top-nav-base__] [__yawf_component_ctrls__] a[href="/at/weibo"] { display: none; }`,
-    'cleanup::navProfile': /* css */ `[__yawf_component_weibo-top-nav-base__] [__yawf_component_ctrls__] a[href^="/u/"] { display: none; }`,
-    'cleanup::navAvatar': [
-      /* css */ `[__yawf_component_weibo-top-nav-base__] [__yawf_component_ctrls__] a[href^="/u/"] { text-decoration: none; }`,
-      /* css */ `[__yawf_component_weibo-top-nav-base__] [__yawf_component_ctrls__] a[href^="/u/"] .__yawf_ctrls_avatarItem::before { font-family: woo; content: "\\e087"; color: var(--weibo-top-nav-icon-color); font-size: 30px; }`,
-      /* css */ `[__yawf_component_weibo-top-nav-base__] [__yawf_component_ctrls__] a[href^="/u/"] .__yawf_ctrls_avatarItem > *{ display: none; }`,
-    ].join('\n'),
-    'cleanup::navGame': /* css */ `[__yawf_component_weibo-top-nav-base__] a[href*="game.weibo.com"] { display: none; }`,
-    'cleanup::navDarkMode': /* css */ `[__yawf_component_weibo-top-nav-base__] [__yawf_component_dark__] { display: none; }`,
-    'cleanup::navAria': /* css */ `[__yawf_component_aria__] { display: none; }`,
-    'cleanup::navLogo': /* css */ `.__yawf_weibo-top-nav-base_logoImg { display: none; }`,
-    'cleanup::leftNavSpecial': /* css */ `[__yawf_component_left-nav-home__] a:has(.woo-font--navSpecial) { display: none; }`,
-    'cleanup::leftNavMutual': /* css */ `[__yawf_component_left-nav-home__] a:has(.woo-font--navMutual) { display: none; }`,
-    'cleanup::leftNavCustomGroups': /* css */ `.__yawf_left-nav-home_split, [__yawf_component_left-nav-home__] .woo-box-flex:has(.__yawf_left-nav-home_title), [__yawf_component_left-nav-home__] a:has(.woo-font--navDot) { display: none; }`,
-    'cleanup::hotSearch': /* css */ `[__yawf_component_card-hot-search__] { display: none; }`,
-    'cleanup::interested': /* css */ `[__yawf_component_card-interested__] { display: none; }`,
-    'cleanup::creatorCenter': /* css */ `[__yawf_component_card-service__] { display: none; }`,
-    'cleanup::sideFooter': /* css */ `.wbpro-side-copy[__yawf_component_index__] { display: none; }`,
-    'cleanup::service': /* css */ `[__yawf_component_service-module__] { display: none; }`,
-    'cleanup::followRecom': /* css */ `[__yawf_component_recom-module__] { display: none; }`,
-    'cleanup::feedEmptyTip': /* css */ `.__yawf_home_emptyPic { display: none; }`,
-    'cleanup::feedSource': /* css */ `.__yawf_head-info_source { display: none; }`,
-    'cleanup::feedFollow': /* css */ `[__yawf_component_feed__] [__yawf_component_head__] [__yawf_component_follow-btn__] { display: none; }`,
-    'cleanup::feedQr': /* css */ `[__yawf_feed_toobar__extra__] { display: none; }`,
-    'cleanup::feedRetweet': /* css */ `[__yawf_feed_toolbar__="retweet"], [__yawf_comment_toolbar_item__="retweet"] { display: none; }`,
-    'cleanup::feedLike': /* css */ `[__yawf_feed_toolbar__="like"], [__yawf_comment_toolbar_item__="like"] { display: none; }`,
-    'cleanup::translate': /* css */ `.__yawf_translate_opt { display: none; }`,
-    'cleanup::iconVerify': /* css */ `.woo-icon-skinSpe, .woo-icon-skinSpe + .woo-icon-frames, .woo-icon--vred, .woo-icon--vorange, .woo-icon--vyellow, .woo-icon--vblue { display: none; }`,
-    'cleanup::iconVip': /* css */ `[__yawf_icon_list_item__="vip"], .__yawf_woo-icon_vipimg { display: none; }`,
-    'cleanup::iconFans': /* css */ `.__yawf_icon-fans_fans { display: none; }`,
-    'cleanup::iconOther': /* css */ `.__yawf_icon-list_custom { display: none; }`,
-    'cleanup::profileHeader': [
-      /* css */ `[__yawf_component_profile-header__] .wbpro-pos { display: none; }`,
-      /* css */ `[__yawf_component_profile-header__] .__yawf_profile-header_box1 { padding-top: 40px; }`,
-      /* css */ `[__yawf_component_profile-header__] .__yawf_profile-header_avatar2 { margin-top: 0; }`,
-      /* css */ `[__yawf_component_profile-header__] .__yawf_profile-header_content { padding-left: 100px; margin-top: -50px; width: 0; }`,
-      /* css */ `[__yawf_component_profile-header__] .__yawf_profile-header_box3 { margin-left: 126px; }`,
-    ].join('\n'),
-    'cleanup::ad': [/* css */ `[__yawf_component_tips-ad__] { display: none; }`].join('\n'),
-  };
+  const cleanupKeys = [
+    'cleanup::navHome', 'cleanup::navHot', 'cleanup::navTv', 'cleanup::navMessage',
+    'cleanup::navProfile', 'cleanup::navAvatar', 'cleanup::navGame', 'cleanup::navDarkMode',
+    'cleanup::navAria', 'cleanup::navLogo', 'cleanup::leftNavSpecial', 'cleanup::leftNavMutual',
+    'cleanup::leftNavCustomGroups', 'cleanup::hotSearch', 'cleanup::interested',
+    'cleanup::creatorCenter', 'cleanup::sideFooter', 'cleanup::service', 'cleanup::followRecom',
+    'cleanup::feedEmptyTip', 'cleanup::feedSource', 'cleanup::feedFollow', 'cleanup::feedQr',
+    'cleanup::feedRetweet', 'cleanup::feedLike', 'cleanup::translate', 'cleanup::iconVerify',
+    'cleanup::iconVip', 'cleanup::iconFans', 'cleanup::iconOther', 'cleanup::profileHeader',
+    'cleanup::ad',
+  ];
   appReady.then(() => {
-    Object.keys(cleanupStyles).forEach((key) => {
-      if (getConfigBoolean(key)) addStyle(cleanupStyles[key]);
+    cleanupKeys.forEach((key) => {
+      if (getConfigBoolean(key)) {
+        const suffix = key.slice('cleanup::'.length);
+        const cls = 'yawf-cleanup-' + (kebabCase(suffix) ?? suffix);
+        document.documentElement.classList.add(cls);
+      }
     });
-    flushStyles();
   });
   //#endregion
 }
