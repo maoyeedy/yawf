@@ -1,21 +1,21 @@
 <script lang="ts">
-  interface TabDef {
-    name: string;
-  }
+interface TabDef {
+  name: string
+}
 
-  interface Props {
-    tabs: TabDef[];
-    activeIndex?: number;
-    onchange?: (index: number) => void;
-    children: import('svelte').Snippet<[number]>;
-  }
+interface Props {
+  tabs: TabDef[]
+  activeIndex?: number
+  onchange?: (index: number) => void
+  children: import('svelte').Snippet<[number]>
+}
 
-  let { tabs, activeIndex = $bindable(0), onchange, children }: Props = $props();
+let { tabs, activeIndex = $bindable(0), onchange, children }: Props = $props()
 
-  function selectTab(index: number) {
-    activeIndex = index;
-    onchange?.(index);
-  }
+function selectTab(index: number) {
+  activeIndex = index
+  onchange?.(index)
+}
 </script>
 
 <div class="yawf-tabs">
@@ -31,10 +31,8 @@
     {/each}
   </div>
   <div class="yawf-tab-content">
-    {#each tabs as _, i}
-      <div class="yawf-tab" class:yawf-current={i === activeIndex}>
-        {@render children(i)}
-      </div>
-    {/each}
+    <div class="yawf-tab yawf-current">
+      {@render children(activeIndex)}
+    </div>
   </div>
 </div>

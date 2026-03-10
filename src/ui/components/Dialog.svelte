@@ -1,103 +1,86 @@
 <script lang="ts">
-  import { type Snippet, tick } from 'svelte';
+import { type Snippet, tick } from 'svelte'
 
-  interface Props {
-    id: string;
-    title: string;
-    onhide?: () => void;
-    onshow?: () => void;
-    children: Snippet;
-    buttons?: Snippet;
-    onok?: (() => void) | null;
-    oncancel?: (() => void) | null;
+interface Props {
+  id: string
+  title: string
+  onhide?: () => void
+  onshow?: () => void
+  children: Snippet
+  buttons?: Snippet
+  onok?: (() => void) | null
+  oncancel?: (() => void) | null
+}
+
+let { id, title, onhide, onshow, children, buttons, onok = null, oncancel = null }: Props = $props()
+
+let dialog: HTMLElement | undefined = $state()
+let visible = $state(false)
+let leaving = $state(false)
+let lastPos = $state({ x: 0, y: 0 })
+
+function setPos(pos: { x: number; y: number }) {
+  if (!dialog) return
+  const left = Math.min(Math.max(0, pos.x), document.body.clientWidth - dialog.clientWidth - 2)
+  const top = Math.min(Math.max(0, pos.y), document.body.clientHeight - dialog.clientHeight - 2)
+  lastPos = { x: left, y: top }
+}
+
+function resetPos() {
+  setPos(lastPos)
+}
+
+let dragging = $state(false)
+let mouseStart = { x: 0, y: 0 }
+
+function onMouseDown(e: MouseEvent) {
+  mouseStart = { x: e.screenX - lastPos.x, y: e.screenY - lastPos.y }
+  dragging = true
+  const onMouseMove = (ev: MouseEvent) => {
+    setPos({ x: ev.screenX - mouseStart.x, y: ev.screenY - mouseStart.y })
   }
-
-  let {
-    id,
-    title,
-    onhide,
-    onshow,
-    children,
-    buttons,
-    onok = null,
-    oncancel = null,
-  }: Props = $props();
-
-  let dialog: HTMLElement | undefined = $state();
-  let visible = $state(false);
-  let leaving = $state(false);
-  let lastPos = $state({ x: 0, y: 0 });
-
-  function setPos(pos: { x: number; y: number }) {
-    if (!dialog) return;
-    const left = Math.min(Math.max(0, pos.x), document.body.clientWidth - dialog.clientWidth - 2);
-    const top = Math.min(Math.max(0, pos.y), document.body.clientHeight - dialog.clientHeight - 2);
-    lastPos = { x: left, y: top };
+  const onMouseUp = () => {
+    document.removeEventListener('mousemove', onMouseMove)
+    document.removeEventListener('mouseup', onMouseUp)
+    dragging = false
   }
+  document.addEventListener('mousemove', onMouseMove)
+  document.addEventListener('mouseup', onMouseUp)
+}
 
-  function resetPos() {
-    setPos(lastPos);
-  }
+function hide() {
+  onhide?.()
+  leaving = true
+  document.removeEventListener('scroll', resetPos)
+  window.removeEventListener('resize', resetPos)
+  setTimeout(() => {
+    visible = false
+    leaving = false
+  }, 200)
+}
 
-  let dragging = $state(false);
-  let mouseStart = { x: 0, y: 0 };
+function handleKeydown(event: KeyboardEvent) {
+  if (!event.isTrusted) return
+  if (event.key === 'Enter' && onok) onok()
+  else if (event.key === 'Escape') {
+    ;(oncancel ?? hide)()
+  } else return
+  event.stopPropagation()
+  event.preventDefault()
+}
 
-  function onMouseDown(e: MouseEvent) {
-    mouseStart = { x: e.screenX - lastPos.x, y: e.screenY - lastPos.y };
-    dragging = true;
-    const onMouseMove = (ev: MouseEvent) => {
-      setPos({ x: ev.screenX - mouseStart.x, y: ev.screenY - mouseStart.y });
-    };
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      dragging = false;
-    };
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  }
-
-  function hide() {
-    onhide?.();
-    leaving = true;
-    document.removeEventListener('scroll', resetPos);
-    window.removeEventListener('resize', resetPos);
-    setTimeout(() => {
-      visible = false;
-      leaving = false;
-    }, 200);
-  }
-
-  function handleClose() {
-    hide();
-  }
-
-  function handleMask() {
-    hide();
-  }
-
-  function handleKeydown(event: KeyboardEvent) {
-    if (!event.isTrusted) return;
-    if (event.key === 'Enter' && onok) onok();
-    else if (event.key === 'Escape') {
-      (oncancel ?? hide)();
-    } else return;
-    event.stopPropagation();
-    event.preventDefault();
-  }
-
-  export async function show(pos?: { x?: number; y?: number }) {
-    visible = true;
-    leaving = false;
-    const x = pos?.x ?? (window.innerWidth - 820) / 2;
-    const y = pos?.y ?? (window.innerHeight - 520) / 2;
-    // Wait for Svelte to flush DOM updates before positioning
-    await tick();
-    setPos({ x, y });
-    document.addEventListener('scroll', resetPos);
-    window.addEventListener('resize', resetPos);
-    onshow?.();
-  }
+export async function show(pos?: { x?: number; y?: number }) {
+  visible = true
+  leaving = false
+  const x = pos?.x ?? (window.innerWidth - 820) / 2
+  const y = pos?.y ?? (window.innerHeight - 520) / 2
+  // Wait for Svelte to flush DOM updates before positioning
+  await tick()
+  setPos({ x, y })
+  document.addEventListener('scroll', resetPos)
+  window.addEventListener('resize', resetPos)
+  onshow?.()
+}
 </script>
 
 {#if visible}
@@ -117,7 +100,7 @@
     >
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <i class="woo-font woo-font--cross yawf-dialog-close" title="关闭" onclick={handleClose}></i>
+      <i class="woo-font woo-font--cross yawf-dialog-close" title="关闭" onclick={hide}></i>
       <div
         class="woo-box-flex woo-box-column woo-box-alignCenter woo-dialog-main"
         aria-modal="true"
@@ -158,6 +141,6 @@
     </div>
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <div class="woo-modal-mask yawf-dialog-mask" onclick={handleMask}></div>
+    <div class="woo-modal-mask yawf-dialog-mask" onclick={hide}></div>
   </div>
 {/if}

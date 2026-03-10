@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
-import monkey from 'vite-plugin-monkey';
+import { defineConfig } from 'vite'
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+import monkey from 'vite-plugin-monkey'
 
 export default defineConfig({
   plugins: [
@@ -17,11 +17,19 @@ export default defineConfig({
         match: ['*://*.weibo.com/*'],
         noframes: true,
         'run-at': 'document-start',
-        connect: ['miaopai.com', 'sina.cn', 'sina.com.cn', 'sinaimg.cn', 'sinajs.cn', 't.cn', 'weibo.com'],
+        connect: [
+          'miaopai.com',
+          'sina.cn',
+          'sina.com.cn',
+          'sinaimg.cn',
+          'sinajs.cn',
+          't.cn',
+          'weibo.com',
+        ],
       },
       build: {
         externalGlobals: {},
       },
     }),
   ],
-});
+})

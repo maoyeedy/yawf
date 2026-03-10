@@ -1,41 +1,41 @@
 <script lang="ts">
-  import type { ConfigManager } from '../configManager';
+import type { ConfigManager } from '../configManager'
 
-  interface Props {
-    key: string;
-    configManager: ConfigManager;
-    onchange?: (key: string, value: string[]) => void;
-  }
+interface Props {
+  key: string
+  configManager: ConfigManager
+  onchange?: (key: string, value: string[]) => void
+}
 
-  let { key, configManager, onchange }: Props = $props();
+let { key, configManager, onchange }: Props = $props()
 
-  let items: string[] = $state([]);
-  let inputValue = $state('');
-  let inputDisabled = $state(false);
+let items: string[] = $state([])
+let inputValue = $state('')
+let inputDisabled = $state(false)
 
-  $effect(() => {
-    items = configManager.get(key) ?? [];
-    const unsub = configManager.addChangeListener(key, (v) => {
-      items = Array.isArray(v) ? v : [];
-    });
-    return unsub;
-  });
+$effect(() => {
+  items = configManager.get(key) ?? []
+  const unsub = configManager.addChangeListener(key, (v) => {
+    items = Array.isArray(v) ? v : []
+  })
+  return unsub
+})
 
-  function removeItem(val: string) {
-    const updated = items.filter((i) => i !== val);
-    configManager.set(key, updated);
-    onchange?.(key, updated);
-  }
+function removeItem(val: string) {
+  const updated = items.filter((i) => i !== val)
+  configManager.set(key, updated)
+  onchange?.(key, updated)
+}
 
-  function addItem(e: SubmitEvent) {
-    e.preventDefault();
-    const val = inputValue.trim();
-    if (!val) return;
-    const updated = (items.filter((i) => i !== val)).concat([val]);
-    configManager.set(key, updated);
-    onchange?.(key, updated);
-    inputValue = '';
-  }
+function addItem(e: SubmitEvent) {
+  e.preventDefault()
+  const val = inputValue.trim()
+  if (!val) return
+  const updated = items.filter((i) => i !== val).concat([val])
+  configManager.set(key, updated)
+  onchange?.(key, updated)
+  inputValue = ''
+}
 </script>
 
 <div>

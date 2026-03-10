@@ -1,26 +1,26 @@
 <script lang="ts">
-  let visible = $state(false);
+let visible = $state(false)
 
-  export function show() {
-    visible = true;
+export function show() {
+  visible = true
+}
+
+function refresh() {
+  location.reload()
+}
+
+function close() {
+  visible = false
+}
+
+$effect(() => {
+  if (visible) {
+    const timer = setTimeout(() => {
+      visible = false
+    }, 8000)
+    return () => clearTimeout(timer)
   }
-
-  function refresh() {
-    location.reload();
-  }
-
-  function close() {
-    visible = false;
-  }
-
-  $effect(() => {
-    if (visible) {
-      const timer = setTimeout(() => {
-        visible = false;
-      }, 8000);
-      return () => clearTimeout(timer);
-    }
-  });
+})
 </script>
 
 {#if visible}

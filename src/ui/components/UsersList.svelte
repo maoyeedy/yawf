@@ -1,157 +1,153 @@
 <script lang="ts">
-  import type { ConfigManager } from '../configManager';
+import type { ConfigManager } from '../configManager'
+import type { UserInfo } from '../../shared/types'
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-  interface UserInfo {
-    idstr: string;
-    screen_name: string;
-    avatar: string;
-  }
+interface Props {
+  key: string
+  configManager: ConfigManager
+  xhr: Record<string, any>
+  wooDialog: (config: any) => Promise<unknown>
+  onchange?: (key: string, value: string[]) => void
+}
 
-  interface Props {
-    key: string;
-    configManager: ConfigManager;
-    xhr: Record<string, any>;
-    wooDialog: (config: any) => Promise<unknown>;
-    onchange?: (key: string, value: string[]) => void;
-  }
+let { key, configManager, xhr, wooDialog, onchange }: Props = $props()
 
-  let { key, configManager, xhr, wooDialog, onchange }: Props = $props();
+let items: string[] = $state([])
+let userInfoMap: Record<string, UserInfo> = $state({})
+let inputValue = $state('')
+let inputDisabled = $state(false)
+let autoCompleteItems: Array<{ screen_name: string }> = $state([])
+let autoCompleteVisible = $state(false)
+let autoCompleteIndex = $state(-1)
+let inputEl: HTMLInputElement | undefined = $state()
+let autoCompleteEl: HTMLDivElement | undefined = $state()
 
-  let items: string[] = $state([]);
-  let userInfoMap: Record<string, UserInfo> = $state({});
-  let inputValue = $state('');
-  let inputDisabled = $state(false);
-  let autoCompleteItems: Array<{ screen_name: string }> = $state([]);
-  let autoCompleteVisible = $state(false);
-  let autoCompleteIndex = $state(-1);
-  let inputEl: HTMLInputElement | undefined = $state();
-  let autoCompleteEl: HTMLDivElement | undefined = $state();
+$effect(() => {
+  items = configManager.get(key) ?? []
+  const unsub = configManager.addChangeListener(key, (v) => {
+    items = Array.isArray(v) ? v : []
+  })
+  return unsub
+})
 
-  $effect(() => {
-    items = configManager.get(key) ?? [];
-    const unsub = configManager.addChangeListener(key, (v) => {
-      items = Array.isArray(v) ? v : [];
-    });
-    return unsub;
-  });
-
-  // Fetch user info for all items
-  $effect(() => {
-    for (const idstr of items) {
-      if (!userInfoMap[idstr]) {
-        xhr.userInfoById(idstr).then((user: UserInfo | null) => {
-          if (user) {
-            userInfoMap = { ...userInfoMap, [idstr]: user };
-          }
-        });
-      }
-    }
-  });
-
-  function removeItem(val: string) {
-    const updated = items.filter((i) => i !== val);
-    configManager.set(key, updated);
-    onchange?.(key, updated);
-  }
-
-  async function addUser(name: string) {
-    const trimmed = name.trim().replace(/^@/, '');
-    if (!trimmed) return;
-    inputDisabled = true;
-    try {
-      const user: UserInfo | null = await xhr.userInfoByName(trimmed, { immediate: true });
-      if (!user) {
-        wooDialog({
-          type: 'alert',
-          message: '找不到该用户',
-          btnConfirm: '我知道了',
-          title: '添加用户',
-        });
-        return;
-      }
-      const idstr = user.idstr;
-      const updated = items.filter((i) => i !== idstr).concat([idstr]);
-      configManager.set(key, updated);
-      onchange?.(key, updated);
-      inputValue = '';
-    } finally {
-      inputDisabled = false;
-      inputEl?.focus();
+// Fetch user info for all items
+$effect(() => {
+  for (const idstr of items) {
+    if (!userInfoMap[idstr]) {
+      xhr.userInfoById(idstr).then((user: UserInfo | null) => {
+        if (user) {
+          userInfoMap = { ...userInfoMap, [idstr]: user }
+        }
+      })
     }
   }
+})
 
-  function handleSubmit(e: SubmitEvent) {
-    e.preventDefault();
-    const current = autoCompleteItems[autoCompleteIndex];
-    if (current) {
-      addUser(current.screen_name);
-    } else {
-      addUser(inputValue);
+function removeItem(val: string) {
+  const updated = items.filter((i) => i !== val)
+  configManager.set(key, updated)
+  onchange?.(key, updated)
+}
+
+async function addUser(name: string) {
+  const trimmed = name.trim().replace(/^@/, '')
+  if (!trimmed) return
+  inputDisabled = true
+  try {
+    const user: UserInfo | null = await xhr.userInfoByName(trimmed, { immediate: true })
+    if (!user) {
+      wooDialog({
+        type: 'alert',
+        message: '找不到该用户',
+        btnConfirm: '我知道了',
+        title: '添加用户',
+      })
+      return
     }
-    autoCompleteVisible = false;
-    autoCompleteItems = [];
+    const idstr = user.idstr
+    const updated = items.filter((i) => i !== idstr).concat([idstr])
+    configManager.set(key, updated)
+    onchange?.(key, updated)
+    inputValue = ''
+  } finally {
+    inputDisabled = false
+    inputEl?.focus()
   }
+}
 
-  async function fetchAutoComplete() {
-    const val = inputValue.trim().replace(/^@/, '').trim();
-    if (!val) {
-      autoCompleteItems = [];
-      return;
-    }
-    const snapshot = inputValue;
-    const users: any[] = await xhr.searchUsers(val);
-    if (inputValue !== snapshot) return;
-    autoCompleteItems = users;
-    autoCompleteIndex = users.length > 0 ? 0 : -1;
+function handleSubmit(e: SubmitEvent) {
+  e.preventDefault()
+  const current = autoCompleteItems[autoCompleteIndex]
+  if (current) {
+    addUser(current.screen_name)
+  } else {
+    addUser(inputValue)
   }
+  autoCompleteVisible = false
+  autoCompleteItems = []
+}
 
-  function handleFocus() {
-    autoCompleteVisible = true;
-    fetchAutoComplete();
+async function fetchAutoComplete() {
+  const val = inputValue.trim().replace(/^@/, '').trim()
+  if (!val) {
+    autoCompleteItems = []
+    return
   }
+  const snapshot = inputValue
+  const users: any[] = await xhr.searchUsers(val)
+  if (inputValue !== snapshot) return
+  autoCompleteItems = users
+  autoCompleteIndex = users.length > 0 ? 0 : -1
+}
 
-  function handleBlur(event: FocusEvent) {
-    // Only hide autocomplete if focus is not moving to an autocomplete item
-    const related = event.relatedTarget as HTMLElement | null;
-    if (related && autoCompleteEl?.contains(related)) return;
-    autoCompleteVisible = false;
+function handleFocus() {
+  autoCompleteVisible = true
+  fetchAutoComplete()
+}
+
+function handleBlur(event: FocusEvent) {
+  // Only hide autocomplete if focus is not moving to an autocomplete item
+  const related = event.relatedTarget as HTMLElement | null
+  if (related && autoCompleteEl?.contains(related)) return
+  autoCompleteVisible = false
+}
+
+function handleInput() {
+  autoCompleteItems = []
+  fetchAutoComplete()
+}
+
+function handleKeydown(event: KeyboardEvent) {
+  if (!autoCompleteVisible || autoCompleteItems.length === 0) return
+  if (event.isComposing) return
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    autoCompleteIndex = (autoCompleteIndex + 1) % autoCompleteItems.length
+    scrollCurrentIntoView()
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    autoCompleteIndex =
+      (autoCompleteIndex - 1 + autoCompleteItems.length) % autoCompleteItems.length
+    scrollCurrentIntoView()
+  } else if (event.key === 'Enter' && autoCompleteIndex >= 0) {
+    inputValue = autoCompleteItems[autoCompleteIndex].screen_name
   }
+}
 
-  function handleInput() {
-    autoCompleteItems = [];
-    fetchAutoComplete();
-  }
+function scrollCurrentIntoView() {
+  if (!autoCompleteEl) return
+  const items = autoCompleteEl.querySelectorAll('.yawf-collection-auto-complete-item')
+  items[autoCompleteIndex]?.scrollIntoView({ block: 'nearest' })
+}
 
-  function handleKeydown(event: KeyboardEvent) {
-    if (!autoCompleteVisible || autoCompleteItems.length === 0) return;
-    if (event.isComposing) return;
-
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      autoCompleteIndex = (autoCompleteIndex + 1) % autoCompleteItems.length;
-      scrollCurrentIntoView();
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      autoCompleteIndex = (autoCompleteIndex - 1 + autoCompleteItems.length) % autoCompleteItems.length;
-      scrollCurrentIntoView();
-    } else if (event.key === 'Enter' && autoCompleteIndex >= 0) {
-      inputValue = autoCompleteItems[autoCompleteIndex].screen_name;
-    }
-  }
-
-  function scrollCurrentIntoView() {
-    if (!autoCompleteEl) return;
-    const items = autoCompleteEl.querySelectorAll('.yawf-collection-auto-complete-item');
-    items[autoCompleteIndex]?.scrollIntoView({ block: 'nearest' });
-  }
-
-  function selectAutoComplete(screenName: string) {
-    addUser(screenName);
-    autoCompleteVisible = false;
-    autoCompleteItems = [];
-  }
+function selectAutoComplete(screenName: string) {
+  addUser(screenName)
+  autoCompleteVisible = false
+  autoCompleteItems = []
+}
 </script>
 
 <div>

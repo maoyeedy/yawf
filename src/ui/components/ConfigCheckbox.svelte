@@ -1,31 +1,31 @@
 <script lang="ts">
-  import type { ConfigManager } from '../configManager';
+import type { ConfigManager } from '../configManager'
 
-  interface Props {
-    key: string;
-    label: string;
-    configManager: ConfigManager;
-    onchange?: (key: string, value: boolean) => void;
-  }
+interface Props {
+  key: string
+  label: string
+  configManager: ConfigManager
+  onchange?: (key: string, value: boolean) => void
+}
 
-  let { key, label, configManager, onchange }: Props = $props();
+let { key, label, configManager, onchange }: Props = $props()
 
-  let checked = $state(false);
+let checked = $state(false)
 
-  $effect(() => {
-    checked = configManager.get(key) ?? false;
-    const unsub = configManager.addChangeListener(key, (v) => {
-      checked = v ?? false;
-    });
-    return unsub;
-  });
+$effect(() => {
+  checked = configManager.get(key) ?? false
+  const unsub = configManager.addChangeListener(key, (v) => {
+    checked = v ?? false
+  })
+  return unsub
+})
 
-  function handleChange(e: Event) {
-    const target = e.target as HTMLInputElement;
-    checked = target.checked;
-    configManager.set(key, checked);
-    onchange?.(key, checked);
-  }
+function handleChange(e: Event) {
+  const target = e.target as HTMLInputElement
+  checked = target.checked
+  configManager.set(key, checked)
+  onchange?.(key, checked)
+}
 </script>
 
 <label class="yawf-checkbox-label">
