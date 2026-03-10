@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+  import { type Snippet, tick } from 'svelte';
 
   interface Props {
     id: string;
@@ -86,18 +86,17 @@
     event.preventDefault();
   }
 
-  export function show(pos?: { x?: number; y?: number }) {
+  export async function show(pos?: { x?: number; y?: number }) {
     visible = true;
     leaving = false;
     const x = pos?.x ?? (window.innerWidth - 820) / 2;
     const y = pos?.y ?? (window.innerHeight - 520) / 2;
-    // Need to wait for DOM to render before setting position
-    setTimeout(() => {
-      setPos({ x, y });
-      document.addEventListener('scroll', resetPos);
-      window.addEventListener('resize', resetPos);
-      onshow?.();
-    }, 0);
+    // Wait for Svelte to flush DOM updates before positioning
+    await tick();
+    setPos({ x, y });
+    document.addEventListener('scroll', resetPos);
+    window.addEventListener('resize', resetPos);
+    onshow?.();
   }
 </script>
 

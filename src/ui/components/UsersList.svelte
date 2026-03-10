@@ -112,11 +112,11 @@
     fetchAutoComplete();
   }
 
-  function handleBlur() {
-    // Delay to allow click on autocomplete items
-    setTimeout(() => {
-      autoCompleteVisible = false;
-    }, 200);
+  function handleBlur(event: FocusEvent) {
+    // Only hide autocomplete if focus is not moving to an autocomplete item
+    const related = event.relatedTarget as HTMLElement | null;
+    if (related && autoCompleteEl?.contains(related)) return;
+    autoCompleteVisible = false;
   }
 
   function handleInput() {

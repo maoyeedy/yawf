@@ -1,5 +1,6 @@
 <script lang="ts">
   import { type ConfigManager } from '../configManager';
+  import { STATIC_KEYS } from '../SettingsApp.svelte';
   import Tabs from './Tabs.svelte';
   import ConfigCheckbox from './ConfigCheckbox.svelte';
   import StringsList from './StringsList.svelte';
@@ -25,26 +26,11 @@
 
   let activeTab = $state(0);
 
-  /** Keys that require page reload when changed */
-  const staticKeys = new Set([
-    'cleanup::navHome', 'cleanup::navHot', 'cleanup::navTv', 'cleanup::navMessage',
-    'cleanup::navProfile', 'cleanup::navAvatar', 'cleanup::navGame', 'cleanup::navDarkMode',
-    'cleanup::navAria', 'cleanup::navLogo',
-    'cleanup::leftNavSpecial', 'cleanup::leftNavMutual', 'cleanup::leftNavCustomGroups',
-    'cleanup::hotSearch', 'cleanup::searchTop', 'cleanup::interested',
-    'cleanup::creatorCenter', 'cleanup::sideFooter', 'cleanup::service', 'cleanup::followRecom',
-    'cleanup::feedEmptyTip', 'cleanup::feedSource', 'cleanup::feedFollow', 'cleanup::feedQr',
-    'cleanup::feedRetweet', 'cleanup::feedLike', 'cleanup::translate',
-    'cleanup::iconVerify', 'cleanup::iconVip', 'cleanup::iconFans', 'cleanup::iconOther',
-    'cleanup::profileHeader', 'cleanup::ad',
-    'about::debug',
-  ]);
-
   let dirtyKeys = $state(new Set<string>());
 
   function handleConfigChange(key: string, value: any) {
     invokePageScript('configUpdate', { key, value });
-    if (staticKeys.has(key)) {
+    if (STATIC_KEYS.has(key)) {
       dirtyKeys = new Set([...dirtyKeys, key]);
       dirtyStaticKeys.add(key);
     }

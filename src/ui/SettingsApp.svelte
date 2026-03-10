@@ -1,3 +1,22 @@
+<script lang="ts" module>
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+
+  /** Keys that require page reload when changed (shared constant) */
+  export const STATIC_KEYS = new Set([
+    'cleanup::navHome', 'cleanup::navHot', 'cleanup::navTv', 'cleanup::navMessage',
+    'cleanup::navProfile', 'cleanup::navAvatar', 'cleanup::navGame', 'cleanup::navDarkMode',
+    'cleanup::navAria', 'cleanup::navLogo',
+    'cleanup::leftNavSpecial', 'cleanup::leftNavMutual', 'cleanup::leftNavCustomGroups',
+    'cleanup::hotSearch', 'cleanup::searchTop', 'cleanup::interested',
+    'cleanup::creatorCenter', 'cleanup::sideFooter', 'cleanup::service', 'cleanup::followRecom',
+    'cleanup::feedEmptyTip', 'cleanup::feedSource', 'cleanup::feedFollow', 'cleanup::feedQr',
+    'cleanup::feedRetweet', 'cleanup::feedLike', 'cleanup::translate',
+    'cleanup::iconVerify', 'cleanup::iconVip', 'cleanup::iconFans', 'cleanup::iconOther',
+    'cleanup::profileHeader', 'cleanup::ad',
+    'about::debug',
+  ]);
+</script>
+
 <script lang="ts">
   import { unsafeWindow } from '$';
   import { ConfigManager } from './configManager';
@@ -5,8 +24,6 @@
   import ConfigPanel from './components/ConfigPanel.svelte';
   import RefreshToast from './components/RefreshToast.svelte';
   import Fab from './components/Fab.svelte';
-
-  /* eslint-disable @typescript-eslint/no-explicit-any */
 
   interface Props {
     invokePageScript: (method: string, data?: any) => void;
@@ -29,7 +46,7 @@
     });
   });
 
-  function openConfig() {
+  export function openConfig() {
     const profileId = (unsafeWindow as any)?.$CONFIG?.user?.idstr;
     if (!profileId) return;
     configManager = new ConfigManager(profileId);

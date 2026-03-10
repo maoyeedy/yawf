@@ -46,7 +46,7 @@ export function initContentUI(messageKey: string): void {
   appContainer.id = 'yawf-app';
   document.body.appendChild(appContainer);
 
-  mount(SettingsApp, {
+  const app = mount(SettingsApp, {
     target: appContainer,
     props: {
       invokePageScript,
@@ -56,14 +56,9 @@ export function initContentUI(messageKey: string): void {
     },
   });
 
-  // The page-script can still request opening the config dialog via IPC.
-  // Svelte handles the dialog internally now, but we keep the IPC handler
-  // for backward compatibility with page-script requests.
+  // The page-script can request opening the config dialog via IPC.
   handle('config', () => {
-    // The config dialog opening is now handled by the FAB button click in the Svelte app.
-    // Page-script requests to open config are acknowledged but the dialog is managed by Svelte.
-    const fabEl = document.getElementById('yawf-fab');
-    fabEl?.click();
+    app.openConfig();
   });
 }
 
