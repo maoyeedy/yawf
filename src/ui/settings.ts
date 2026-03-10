@@ -906,17 +906,6 @@ export function initContentUI(messageKey: string): void {
     }
   };
 
-  // Inject content-side CSS when page script is ready
-  const injectContentStyle = (css: string) => {
-    const el = document.body.appendChild(document.createElement('style'));
-    el.id = 'yawf_content_style';
-    el.textContent = css.trim() + '\n';
-  };
-
-  appReady.then(() => {
-    injectContentStyle(contentCSS);
-  });
-
   // FAB button
   appReady.then(() => {
     const fab = document.createElement('button');
@@ -932,76 +921,3 @@ export function initContentUI(messageKey: string): void {
   });
 }
 
-// The CSS is kept as a string constant so it can be injected at runtime.
-// In a future iteration this could be moved to a .css file imported with
-// Vite's `?inline` query, but for now this matches the original behavior.
-const contentCSS = /* css */ `
-.yawf-dialog.yawf-dialog { position: fixed; transition: none; }
-.yawf-dialog .woo-dialog-main { max-width: none; padding-bottom: 0; }
-.yawf-dialog-text { max-width: 400px; }
-.yawf-dialog-title { cursor: move; margin-bottom: 0; }
-.yawf-dialog-content { padding: 0; }
-.yawf-dialog-outer { position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; background: none repeat scroll 0% 0% rgb(0, 0, 0); opacity: 0.3; z-index: 9999; }
-.yawf-dialog.yawf-drag { opacity: 0.67; user-select: none; transition: none; }
-.yawf-bubble { max-width: 400px; font-size: 14px; padding: 8px 16px; box-sizing: border-box; }
-.yawf-dialog-close { padding: 8px; position: absolute; top: 10px; right: 10px; z-index: 1; cursor: pointer; }
-
-.yawf-config { width: 800px; font-size: 14px; color: var(--w-main); background: var(--frame-background); }
-
-.yawf-tabs { display: flex; width: 100%; height: 480px; overflow: hidden; }
-.yawf-tab-list { width: 160px; padding: 20px 0; box-sizing: border-box; border-right: 1px solid var(--w-dividing-line); }
-.yawf-tab-item { display: block; font: inherit; width: 100%; height: 40px; line-height: 40px; margin: 0; padding: 0 20px; background: none; border: none; cursor: pointer; text-align: left; color: var(--w-main); }
-.yawf-tab-item:hover { background: var(--w-hover); }
-.yawf-tab-item.yawf-current { font-weight: bold; color: var(--w-main); box-shadow: -2px 0 0 var(--w-brand) inset; background: var(--w-card-background); }
-.yawf-tab-content { flex: 1; padding: 10px 20px 20px; max-height: 480px; overflow: auto; box-sizing: border-box; background: var(--w-card-background); }
-.yawf-tab { display: none; min-height: 400px; color: var(--w-main); }
-.yawf-tab.yawf-current { display: block; }
-
-.yawf-group-title { display: block; font-weight: bold; margin: 15px 10px 5px; }
-.yawf-rule { display: block; margin: 5px 20px; }
-.yawf-compact-group .yawf-group-content { display: grid; grid-template-columns: 1fr 1fr 1fr; }
-
-.yawf-checkbox-wrap { display: inline-block; position: relative; width: var(--w-checkbox-size); height: var(--w-checkbox-size); overflow: hidden; margin-right: 4px; vertical-align: baseline; }
-.yawf-checkbox { position: absolute; left: -100px; }
-.yawf-checkbox-icon { position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 1px solid var(--w-checkbox-border); color: var(--w-checkbox-check-color); }
-.yawf-checkbox-icon svg { position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px; }
-.yawf-checkbox:not(:checked) ~ .yawf-checkbox-icon svg { display: none; }
-label:hover .yawf-checkbox-wrap .yawf-checkbox-icon,
-.yawf-checkbox-wrap:hover .yawf-checkbox-icon { border-color: var(--w-checkbox-check-color); }
-
-.yawf-collection-list { display: block; margin: 5px; padding: 0; list-style: none; }
-.yawf-collection-item { padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden; text-overflow: ellipsis; cursor: default; display: inline-block; position: relative; margin-left: 8px; border: 1px solid var(--w-b-line-default); border-radius: 2px; background: var(--w-card-background); line-height: 20px; vertical-align: middle; }
-.yawf-collection-item-remove { display: block; position: absolute; top: 2px; left: 0; width: 20px; height: 20px; line-height: 20px; text-align: center; cursor: pointer; background: none; border: none; }
-.yawf-collection-item-remove i { color: var(--w-fonticon); }
-.yawf-collection-item-content { max-width: 500px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; display: inline-block; }
-.yawf-collection-form { display: contents; align-items: center; margin: 5px 0; }
-.yawf-collection-form .woo-input-wrap { flex: 1; margin-right: 4px; }
-.yawf-collection-input { width: 100%; height: 20px; box-sizing: border-box; padding-left: var(--w-input-indent, 4px); padding-right: var(--w-input-indent, 4px); }
-.yawf-users-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-.yawf-users-list .yawf-collection-item { padding-left: 60px; height: 50px; margin: 0; }
-.yawf-users-list .yawf-collection-item .yawf-collection-item-remove { position: static; float: right; margin: 5px; }
-.yawf-users-list .yawf-collection-item .yawf-collection-item-content { display: inline; word-break: break-all; white-space: pre-wrap; line-height: 20px; }
-.yawf-users-list .yawf-collection-item .yawf-user-avatar { position: absolute; top: 0; left: 0; width: 50px; height: 50px; }
-.yawf-users-list .yawf-collection-item .yawf-user-item { padding: 5px 0; }
-.yawf-users-list .yawf-collection-item .yawf-user-name:not(:hover):not(:focus) { color: inherit; }
-.yawf-collection-submit { padding: 4px 16px; margin: 0 4px; vertical-align: bottom; background: var(--w-b-flat-default-bg); border: 1px solid var(--w-b-line-default-border); color: var(--w-main); border-radius: 4px; cursor: pointer; }
-.yawf-collection-submit:hover { background: var(--w-b-line-default-bg-hover); }
-
-.yawf-collection-auto-complete { position: absolute; top: 100%; margin-top: 4px; left: 0; width: 400px; z-index: 1; background: var(--w-card-background); color: var(--w-main); border: 1px solid var(--w-b-line-default-border); border-radius: var(--w-pop-wrap-radius); max-height: 200px; overflow: auto; }
-.yawf-collection-auto-complete:empty { display: none; }
-.yawf-collection-auto-complete-current { background: var(--w-pop-item-hover); }
-.yawf-collection-auto-complete-item { line-height: 40px; padding: 0 10px; cursor: normal; }
-
-.yawf-dirty-marker { color: var(--w-brand, #ff8200); font-weight: bold; }
-.yawf-refresh-toast { position: fixed; bottom: 80px; right: 20px; z-index: 9999; background: var(--w-card-background, #fff); color: var(--w-main, #333); border: 1px solid var(--w-b-line-default-border, #ddd); border-radius: 8px; padding: 12px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; font-size: 14px; animation: yawf-toast-in 0.3s ease; }
-@keyframes yawf-toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.yawf-refresh-toast-btn { background: var(--w-brand, #ff8200); color: #fff; border: none; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: 13px; }
-.yawf-refresh-toast-btn:hover { opacity: 0.9; }
-.yawf-refresh-toast-close { background: none; border: none; cursor: pointer; color: var(--w-sub, #999); font-size: 16px; padding: 0 4px; }
-
-#yawf-fab { position: fixed; bottom: 20px; right: 20px; width: 48px; height: 48px; border-radius: 50%; border: none; background: var(--w-brand, #ff8200); color: #fff; font-size: 22px; line-height: 1; cursor: pointer; z-index: 9990; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.35); opacity: 0.8; transition: opacity 0.2s, transform 0.15s; }
-#yawf-fab:hover { opacity: 1; transform: scale(1.1); }
-#yawf-fab:active { transform: scale(0.93); }
-#yawf-fab:focus-visible { outline: 3px solid var(--w-brand, #ff8200); outline-offset: 3px; opacity: 1; }
-`;
-//#endregion

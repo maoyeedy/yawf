@@ -8,6 +8,7 @@ import { GM_getValue } from '$';
 import { buildPagePayload } from './page/index';
 import { injectPageScript } from './page/injector';
 import { initContentUI } from './ui/settings';
+import './ui/styles.scss';
 
 const configKey = 'CONFIG';
 const messageKey =
