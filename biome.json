@@ -43,5 +43,13 @@
         "useArrowFunction": "off"
       }
     }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   }
 }
