@@ -1906,7 +1906,10 @@ const CONFIG_TEMPLATE = /* html */ `
 //#endregion
 //#endregion
 try {
-  unsafeWindow.eval(payload)
+  const script = document.createElement('script')
+  script.textContent = payload
+  document.documentElement.appendChild(script)
+  script.remove()
 } catch (e) {
   // Page script failed to initialize — broker has no counterpart; surface error to user
   console.error('[yyawf] Page script initialization failed:', e)
