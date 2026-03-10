@@ -1,11 +1,13 @@
 # CLAUDE.md
 
-**yyawf** — Tampermonkey/Violentmonkey userscript for Weibo.com. Built with **Vite, TypeScript, and `vite-plugin-monkey**`.
+**yyawf** — Tampermonkey/Violentmonkey userscript for Weibo.com. Built with **Vite, TypeScript, Svelte 5, and `vite-plugin-monkey`**. Linting/formatting via **Biome**.
 
 ## Development Workflow
 
 * **Dev:** Run `npm run dev` to start the Vite dev server and install the proxy script in your script manager (enables Hot Module Replacement).
-* **Build:** Run `npm run build` to compile the final `dist/yyawf.user.js`.
+* **Build:** Run `npm run build` — runs `svelte-check` then `vite build`, outputs `dist/yyawf.user.js`.
+* **Check:** Run `npm run check` for Svelte type-checking only.
+* **Lint/Format:** `npm run lint` and `npm run format` use Biome.
 * **Deploy:** Commit the built file or deploy via GitHub Pages from the `yyawf` branch.
 
 ## Project Structure & Architecture
@@ -14,16 +16,29 @@ The project strictly separates the isolated extension context from the main page
 
 ```text
 src/
-├── main.ts            # Entry point (Content Script / Sandbox)
+├── main.ts                    # Entry point (Content Script / Sandbox)
+├── vite-env.d.ts
 ├── page/
-│   ├── index.ts       # Main page logic (Vue hooks, filtering)
-│   └── injector.ts    # <script> tag injection utility
+│   ├── index.ts               # Main page logic (Vue hooks, filtering)
+│   └── injector.ts            # <script> tag injection utility
 ├── shared/
-│   ├── broker.ts      # MessageBroker class for IPC
-│   └── types.ts       # TypeScript interfaces (Feed, User, etc.)
+│   ├── broker.ts              # MessageBroker class for IPC
+│   └── types.ts               # TypeScript interfaces (Feed, User, etc.)
 └── ui/
-    ├── settings.ts    # ConfigManager and Dialog UI logic
-    └── styles.css     # Injected automatically by Vite
+    ├── SettingsApp.svelte      # Root Svelte app mounted in GM sandbox
+    ├── configManager.ts        # ConfigManager logic
+    ├── settings.ts             # Dialog mount entry point
+    ├── styles.css              # Base CSS (injected by Vite)
+    ├── styles.scss             # SCSS styles
+    └── components/
+        ├── ConfigCheckbox.svelte
+        ├── ConfigPanel.svelte
+        ├── Dialog.svelte
+        ├── Fab.svelte
+        ├── RefreshToast.svelte
+        ├── StringsList.svelte
+        ├── Tabs.svelte
+        └── UsersList.svelte
 
 ```
 
@@ -41,7 +56,7 @@ src/
 * **Types:** Centralized in `shared/types.ts` (`Feed`, `Comment`, `User`). Enforced across IPC boundaries.
 * **Filtering**: `feedFilter()`, `commentFilter()`, `hotSearchFilter()`. `filterConfig()` is memoized — call `invalidateFilterCache()` after settings change. `BoundedSet` (5000-item cap) tracks processed items.
 * **ConfigManager**: Settings keyed by Weibo user ID. The `CONFIG_TEMPLATE` drives the settings UI. `static: true` settings require reload; a dirty-state toast notifies the user.
-* **UI**: Draggable `uiDialog()`. Custom elements (`<yawf-tabs>`, `<yawf-checkbox>`, etc.) are now managed in `src/ui/`. Entry via gear icon (top nav) or FAB (bottom-right). CSS is handled natively by Vite imports.
+* **UI**: Built with **Svelte 5**. `SettingsApp.svelte` is the root component; `settings.ts` mounts it into the GM sandbox. Svelte components in `src/ui/components/` replace the old custom elements. Entry via gear icon (top nav) or FAB (`Fab.svelte`, bottom-right). SCSS (`styles.scss`) and CSS (`styles.css`) are imported by Vite.
 
 ## DOM Selectors
 
@@ -53,6 +68,7 @@ See [docs/dom-map.md](docs/dom-map.md) for authoritative selector map.
 ## Key Patterns
 
 * `addLifecycleListener(componentName, lifecycle, callback)` — Vue lifecycle hooks.
-* **CSS Injection:** Simply `import './styles.css'` in the TS files; Vite and `vite-plugin-monkey` handle the batch injection automatically.
+* **CSS/SCSS Injection:** Import `./styles.css` or `./styles.scss` in TS/Svelte files; Vite and `vite-plugin-monkey` handle batch injection automatically.
 * `wrapFunction(fn)` — uses `WeakMap` (not `__raw__` properties) to track originals.
 * `appReady` — Promise resolving when Vue app is ready; consolidate `.then()` chains.
+* **Svelte mounting:** Use `mount(SettingsApp, { target })` (Svelte 5 API) — not `new Component()`.
