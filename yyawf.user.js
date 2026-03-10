@@ -36,7 +36,7 @@ const configKey = 'CONFIG',
     Array(64)
       .fill(0)
       .map(() => (Math.random() * 16).toString(16)[0])
-      .join('')
+      .join('');
 //#region PAGE SCRIPT
 const payload =
   Array(35).fill('\n').join('') +
@@ -357,7 +357,7 @@ const payload =
         removeAd: getConfigBoolean('cleanup::ad'),
       })
     }
-    const feedFilter = function (feed, context) {
+    const feedFilter = function (feed, context, depth = 0) {
       const { keywords, authorsSet, removeAd } = filterConfig()
       // 广告
       if (removeAd && feed.content_auth === 5) return { action: 'hide', reason: '广告' }
@@ -392,7 +392,7 @@ const payload =
         (userId) => userId !== profile && authorsSet.has(userId)
       )
       if (authorMatch) return { action: 'hide', reason: `用户"${authorMatch}"` }
-      if (feed.retweeted_status) return feedFilter(feed.retweeted_status, context)
+      if (feed.retweeted_status && depth < 2) return feedFilter(feed.retweeted_status, context, depth + 1)
       return { action: 'show' }
     }
     const commentFilter = function (comment, context) {
@@ -762,7 +762,7 @@ const payload =
       return dirty ? filtered : null
     }
     const filterRepostCommentList = (rcList, context) => {
-      if (!Array.isArray(rcList) || !rcList.length) return
+      if (!Array.isArray(rcList) || !rcList.length) return null
       const filtered = []
       let dirty = false
       rcList.forEach((item) => {
@@ -791,7 +791,10 @@ const payload =
                 else log(`二级评论过滤：${status.reason}`, subComment)
               })
             if (filteredSubComments.length === subComments.length) filtered.push(item)
-            else filtered.push({ ...item, comments: filteredSubComments })
+            else {
+              dirty = true
+              filtered.push({ ...item, comments: filteredSubComments })
+            }
           } else {
             dirty = true
             log(`评论过滤：${status.reason}`, item)
@@ -857,8 +860,7 @@ const payload =
             }
           }
         )
-      },
-      { deep: true }
+      }
     )
     //#endregion
 
