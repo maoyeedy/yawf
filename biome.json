@@ -37,10 +37,11 @@
         "recommended": false
       },
       "nursery": {
-        "recommended": false
+        "recommended": true
       },
       "complexity": {
-        "useArrowFunction": "off"
+        "useArrowFunction": "off",
+        "noBannedTypes": "off"
       }
     }
   },
@@ -51,5 +52,18 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.svelte"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          }
+        }
+      }
+    }
+  ]
 }

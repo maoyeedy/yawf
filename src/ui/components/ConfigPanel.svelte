@@ -1,9 +1,9 @@
 <script lang="ts">
 import { type ConfigManager } from '../configManager'
 import { CLEANUP_GROUPS } from '../constants'
-import Tabs from './Tabs.svelte'
 import ConfigCheckbox from './ConfigCheckbox.svelte'
 import StringsList from './StringsList.svelte'
+import Tabs from './Tabs.svelte'
 import UsersList from './UsersList.svelte'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

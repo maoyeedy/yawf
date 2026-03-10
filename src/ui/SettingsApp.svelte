@@ -1,11 +1,11 @@
 <script lang="ts">
 import { unsafeWindow } from '$'
+import ConfigPanel from './components/ConfigPanel.svelte'
+import Dialog from './components/Dialog.svelte'
+import Fab from './components/Fab.svelte'
+import RefreshToast from './components/RefreshToast.svelte'
 import { ConfigManager } from './configManager'
 import { STATIC_KEYS } from './constants'
-import Dialog from './components/Dialog.svelte'
-import ConfigPanel from './components/ConfigPanel.svelte'
-import RefreshToast from './components/RefreshToast.svelte'
-import Fab from './components/Fab.svelte'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

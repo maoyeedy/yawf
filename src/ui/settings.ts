@@ -1,10 +1,10 @@
-import {
-  GM_getValue,
-  GM_setValue,
-  GM_addValueChangeListener,
-  GM_removeValueChangeListener,
-} from '$'
 import { mount } from 'svelte'
+import {
+  GM_addValueChangeListener,
+  GM_getValue,
+  GM_removeValueChangeListener,
+  GM_setValue,
+} from '$'
 import { MessageBroker } from '../shared/broker'
 import SettingsApp from './SettingsApp.svelte'
 

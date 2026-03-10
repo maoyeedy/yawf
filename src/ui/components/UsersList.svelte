@@ -1,6 +1,6 @@
 <script lang="ts">
-import type { ConfigManager } from '../configManager'
 import type { UserInfo } from '../../shared/types'
+import type { ConfigManager } from '../configManager'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
