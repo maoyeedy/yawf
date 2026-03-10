@@ -6,17 +6,14 @@
   &.yawf-dialog { position: fixed; transition: none; }
 
   .woo-dialog-main { max-width: none; padding-bottom: 0; }
+  .woo-dialog-body { width: fit-content; }
 
   &.yawf-drag { opacity: 0.67; user-select: none; transition: none; }
 }
 
 .yawf-dialog-text { max-width: 400px; }
 .yawf-dialog-title { cursor: move; margin-bottom: 0; }
-.yawf-dialog-content { padding: 0; }
-.yawf-dialog-outer {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgb(0 0 0); opacity: 0.3; z-index: 9999;
-}
+.yawf-dialog-content { padding: 0; width: fit-content; }
 .yawf-bubble { max-width: 400px; font-size: 14px; padding: 8px 16px; box-sizing: border-box; }
 .yawf-dialog-close { padding: 8px; position: absolute; top: 10px; right: 10px; z-index: 1; cursor: pointer; }
 
@@ -48,7 +45,7 @@
 }
 
 .yawf-tab-content {
-  flex: 1; padding: 10px 20px 20px; max-height: 480px;
+  flex: 1; padding: 10px 20px 20px;
   overflow: auto; box-sizing: border-box; background: var(--w-card-background);
 }
 
@@ -93,7 +90,7 @@ label:hover .yawf-checkbox-wrap .yawf-checkbox-icon,
 
 .yawf-collection-item {
   padding: 0 5px 0 20px; min-width: 0; height: 20px; overflow: hidden;
-  text-overflow: ellipsis; cursor: default; display: inline-block; position: relative;
+  cursor: default; display: inline-block; position: relative;
   margin-left: 8px; border: 1px solid var(--w-b-line-default); border-radius: 2px;
   background: var(--w-card-background); line-height: 20px; vertical-align: middle;
 }
@@ -112,7 +109,7 @@ label:hover .yawf-checkbox-wrap .yawf-checkbox-icon,
 }
 
 .yawf-collection-form {
-  display: contents; align-items: center; margin: 5px 0;
+  display: flex; align-items: center; margin: 5px 0;
 
   .woo-input-wrap { flex: 1; margin-right: 4px; }
 }
@@ -139,7 +136,7 @@ label:hover .yawf-checkbox-wrap .yawf-checkbox-icon,
 }
 
 .yawf-collection-submit {
-  padding: 4px 16px; margin: 0 4px; vertical-align: bottom;
+  padding: 4px 16px; margin: 0 4px;
   background: var(--w-b-flat-default-bg); border: 1px solid var(--w-b-line-default-border);
   color: var(--w-main); border-radius: 4px; cursor: pointer;
 
@@ -158,7 +155,7 @@ label:hover .yawf-checkbox-wrap .yawf-checkbox-icon,
 }
 
 .yawf-collection-auto-complete-current { background: var(--w-pop-item-hover); }
-.yawf-collection-auto-complete-item { line-height: 40px; padding: 0 10px; cursor: normal; }
+.yawf-collection-auto-complete-item { line-height: 40px; padding: 0 10px; cursor: default; }
 
 // ─── Dirty marker & refresh toast ─────────────────────────────────────────────
 
