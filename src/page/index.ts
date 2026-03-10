@@ -697,7 +697,7 @@ function pageMain(config: Record<string, Record<string, unknown>>, messageKey: s
         const type = instance.setupState.configs[index].type
         if (type === 'yawf-config') {
           invokeContentScript('config', { profileId: $CONFIG.user.idstr })
-        } else _orig.apply(null, args)
+        } else _orig(...args)
       }
       ;(_wrapped as any).__yawf__ = true
       instance.ctx.configHandle = _wrapped.bind(null)
