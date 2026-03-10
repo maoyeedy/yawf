@@ -564,8 +564,8 @@ function pageMain(config: Record<string, Record<string, unknown>>, messageKey: s
               ? [handler.name ?? 'function']
               : Array.isArray(handler)
                 ? handler.flatMap((item: any) =>
-                  typeof item === 'function' ? [item.name ?? 'function'] : []
-                )
+                    typeof item === 'function' ? [item.name ?? 'function'] : []
+                  )
                 : []
           )
             .map((item: string) => item.replace(/.*\s/, ''))
@@ -641,21 +641,21 @@ function pageMain(config: Record<string, Record<string, unknown>>, messageKey: s
   // 微博的操作按钮
   addLifecycleListener('mounted updated', 'feed-toolbar', (instance) => {
     const el = instance.vnode.el
-      ;[...(el?.querySelectorAll?.('.__yawf_feed-toolbar__item') ?? [])].forEach((item: any) => {
-        if (item.querySelector('[__yawf_component_woo-like__]'))
-          item.setAttribute('__yawf_feed_toolbar__', 'like')
-        else {
-          const i = item.querySelector('i[class*="woo-font--"]')
-          if (i)
-            item.setAttribute(
-              '__yawf_feed_toolbar__',
-              i.className
-                .split(' ')
-                .find((i: string) => i.includes('woo-font--'))
-                .split('--')[1]
-            )
-        }
-      })
+    ;[...(el?.querySelectorAll?.('.__yawf_feed-toolbar__item') ?? [])].forEach((item: any) => {
+      if (item.querySelector('[__yawf_component_woo-like__]'))
+        item.setAttribute('__yawf_feed_toolbar__', 'like')
+      else {
+        const i = item.querySelector('i[class*="woo-font--"]')
+        if (i)
+          item.setAttribute(
+            '__yawf_feed_toolbar__',
+            i.className
+              .split(' ')
+              .find((i: string) => i.includes('woo-font--'))
+              .split('--')[1]
+          )
+      }
+    })
     const container = el.querySelector('.woo-box-flex').children
     if (container[1]) container[1].setAttribute('__yawf_feed_toobar__extra__', '')
   })
@@ -699,7 +699,7 @@ function pageMain(config: Record<string, Record<string, unknown>>, messageKey: s
           invokeContentScript('config', { profileId: $CONFIG.user.idstr })
         } else _orig.apply(null, args)
       }
-        ; (_wrapped as any).__yawf__ = true
+      ;(_wrapped as any).__yawf__ = true
       instance.ctx.configHandle = _wrapped.bind(null)
     }
   })
