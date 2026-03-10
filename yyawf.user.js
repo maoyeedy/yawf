@@ -36,7 +36,7 @@ const configKey = 'CONFIG',
     Array(64)
       .fill(0)
       .map(() => (Math.random() * 16).toString(16)[0])
-      .join('');
+      .join('')
 //#region PAGE SCRIPT
 const payload =
   Array(35).fill('\n').join('') +
@@ -85,17 +85,15 @@ const payload =
       return proxy
     }
     const _pendingStyles = []
-    let $style = null
     const addStyle = (css) => {
       _pendingStyles.push(css)
     }
     const flushStyles = () => {
       if (!_pendingStyles.length) return
-      if (!$style) {
-        $style = document.body.appendChild(document.createElement('style'))
-        $style.id = 'yawf_page_style'
-      }
-      $style.textContent += _pendingStyles.join('\n') + '\n'
+      // Create a new <style> element per flush to avoid re-parsing all existing CSS rules
+      const el = document.body.appendChild(document.createElement('style'))
+      el.id = 'yawf_page_style'
+      el.textContent = _pendingStyles.join('\n') + '\n'
       _pendingStyles.length = 0
     }
     // NOTE: This MessageBroker class is duplicated in the content script section below.
@@ -233,9 +231,8 @@ const payload =
         updateCache(param, promise)
         if (!config?.immediate) {
           const wait = throttle
-          throttle = throttle.then(() =>
-            promise.then(() => new Promise((res) => setTimeout(res, 100)))
-          )
+          // Assign throttle directly (not chained off itself) to prevent unbounded promise chain growth
+          throttle = promise.then(() => new Promise((res) => setTimeout(res, 100)))
           await wait
         }
         const cacheAfterWait = returnFromCache(param)
@@ -392,7 +389,8 @@ const payload =
         (userId) => userId !== profile && authorsSet.has(userId)
       )
       if (authorMatch) return { action: 'hide', reason: `用户"${authorMatch}"` }
-      if (feed.retweeted_status && depth < 2) return feedFilter(feed.retweeted_status, context, depth + 1)
+      if (feed.retweeted_status && depth < 2)
+        return feedFilter(feed.retweeted_status, context, depth + 1)
       return { action: 'show' }
     }
     const commentFilter = function (comment, context) {
@@ -734,6 +732,7 @@ const payload =
       }
       add(value) {
         if (this._set.size >= this._maxSize) {
+          // Sets preserve insertion order; first iterator value is the oldest (FIFO eviction)
           this._set.delete(this._set[Symbol.iterator]().next().value)
         }
         this._set.add(value)
@@ -846,22 +845,18 @@ const payload =
     //#endregion
 
     //#region 热搜固顶
-    addLifecycleListener(
-      'created',
-      'card-hot-search',
-      (instance) => {
-        if (!getConfigBoolean('cleanup::searchTop')) return
-        instance.proxy.$watch(
-          () => instance.data.TopWords,
-          function (TopWords) {
-            if (TopWords?.length) {
-              log('清理：热搜：置顶热搜', TopWords)
-              TopWords.splice(0)
-            }
+    addLifecycleListener('created', 'card-hot-search', (instance) => {
+      if (!getConfigBoolean('cleanup::searchTop')) return
+      instance.proxy.$watch(
+        () => instance.data.TopWords,
+        function (TopWords) {
+          if (TopWords?.length) {
+            log('清理：热搜：置顶热搜', TopWords)
+            TopWords.splice(0)
           }
-        )
-      }
-    )
+        }
+      )
+    })
     //#endregion
 
     //#region 元素清理
@@ -1731,17 +1726,15 @@ const renderConfig = (container, profileId, template, dirtyStaticKeys) => {
   }
 }
 const _pendingContentStyles = []
-let $style
 const addStyle = (css) => {
   _pendingContentStyles.push(css)
 }
 const flushStyles = () => {
   if (!_pendingContentStyles.length) return
-  if (!$style) {
-    $style = document.body.appendChild(document.createElement('style'))
-    $style.id = 'yawf_content_style'
-  }
-  $style.textContent += '\n' + _pendingContentStyles.join('\n') + '\n'
+  // Create a new <style> element per flush to avoid re-parsing all existing CSS rules
+  const el = document.body.appendChild(document.createElement('style'))
+  el.id = 'yawf_content_style'
+  el.textContent = _pendingContentStyles.join('\n') + '\n'
   _pendingContentStyles.length = 0
 }
 appReady.then(() => {
@@ -1914,4 +1907,10 @@ const CONFIG_TEMPLATE = /* html */ `
 `
 //#endregion
 //#endregion
-unsafeWindow.eval(payload)
+try {
+  unsafeWindow.eval(payload)
+} catch (e) {
+  // Page script failed to initialize — broker has no counterpart; surface error to user
+  console.error('[yyawf] Page script initialization failed:', e)
+  alert('[yyawf] 脚本初始化失败，部分功能可能无法正常工作。请检查控制台获取详细错误信息。\n\n' + e)
+}
