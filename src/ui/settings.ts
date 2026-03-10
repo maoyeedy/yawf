@@ -41,24 +41,33 @@ export function initContentUI(messageKey: string): void {
 
   const wooDialog = (config: any) => _contentBroker.request('dialog', { config });
 
-  // Mount Svelte app to a container in the DOM
-  const appContainer = document.createElement('div');
-  appContainer.id = 'yawf-app';
-  document.body.appendChild(appContainer);
+  // Mount Svelte app once document.body is available.
+  // At document-start, body may be null, so defer if needed.
+  const mountApp = () => {
+    const appContainer = document.createElement('div');
+    appContainer.id = 'yawf-app';
+    document.body.appendChild(appContainer);
 
-  const app = mount(SettingsApp, {
-    target: appContainer,
-    props: {
-      invokePageScript,
-      xhr,
-      wooDialog,
-      appReady,
-    },
-  });
+    const app = mount(SettingsApp, {
+      target: appContainer,
+      props: {
+        invokePageScript,
+        xhr,
+        wooDialog,
+        appReady,
+      },
+    });
 
-  // The page-script can request opening the config dialog via IPC.
-  handle('config', () => {
-    app.openConfig();
-  });
+    // The page-script can request opening the config dialog via IPC.
+    handle('config', () => {
+      app.openConfig();
+    });
+  };
+
+  if (document.body) {
+    mountApp();
+  } else {
+    document.addEventListener('DOMContentLoaded', mountApp);
+  }
 }
 
